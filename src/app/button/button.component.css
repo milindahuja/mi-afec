@@ -1,0 +1,34 @@
+.button {
+  border: none;
+  color: var(--white);
+  cursor: pointer;
+  background: transparent;
+  margin-right: 5px;
+  padding: 5px 10px;
+  color: var(--white);
+  border-radius: 5px;
+}
+
+.primary {
+  background: var(--green);
+}
+
+.primary:hover {
+  background: var(--dark-green);
+}
+
+.edit {
+  background: var(--green);
+}
+
+.edit:hover {
+  background: var(--dark-green);
+}
+
+.delete {
+  background: var(--red);
+}
+
+.delete:hover {
+  background: var(--dark-red);
+}

@@ -1,0 +1,44 @@
+<div class="wrapper">
+  <div class="search-bar">
+    <input type="text" [(ngModel)]="searchText" (input)="showAllVideos()" placeholder="Search videos">
+    <button (click)="searchVideos()" *ngIf="searchText.trim() !== ''">Search</button>
+  </div>
+  <table class="table">
+    <thead>
+      <tr>
+        <th (click)="sortBy('name')">
+          Video Name
+          <span class="sort-indicator" [ngClass]="{'asc': sortingState['name'] === 'asc', 'desc': sortingState['name'] === 'desc'}"></span>
+        </th>
+        <th (click)="sortBy('author')">
+          Author
+          <span class="sort-indicator" [ngClass]="{'asc': sortingState['author'] === 'asc', 'desc': sortingState['author'] === 'desc'}"></span>
+        </th>
+        <th (click)="sortBy('categories')">
+          Categories
+          <span class="sort-indicator" [ngClass]="{'asc': sortingState['categories'] === 'asc', 'desc': sortingState['categories'] === 'desc'}"></span>
+        </th>
+        <th>Highest quality format</th>
+        <th (click)="sortBy('releaseDate')">
+          Release Date
+          <span class="sort-indicator" [ngClass]="{'asc': sortingState['releaseDate'] === 'asc', 'desc': sortingState['releaseDate'] === 'desc'}"></span>
+        </th>
+        <th>Options</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <tr *ngFor="let video of filteredVideos; index as i; first as isFirst">
+        <td>{{ video.name }}</td>
+        <td>{{ video.author }}</td>
+        <td>{{ video.categories.join(", ") }}</td>
+        <td>{{ video.highestQualityFormat }}</td>
+        <td>{{ video.releaseDate }}</td>
+        <td>
+          <mi-button [buttonType]="'edit'" [text]="'Edit'"></mi-button>
+          <mi-button [buttonType]="'delete'" [text]="'Delete'"></mi-button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
