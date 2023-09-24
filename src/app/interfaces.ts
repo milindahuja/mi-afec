@@ -23,8 +23,8 @@ export interface Author {
 }
 
 export interface NewVideo {
-  name: '',
-  videoAuthor: '',
+  name: string,
+  videoAuthor: string,
   categories: string[]
 }
 

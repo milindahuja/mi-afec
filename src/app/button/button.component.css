@@ -25,10 +25,17 @@
   background: var(--dark-green);
 }
 
-.delete {
+.delete, .cancel {
   background: var(--red);
 }
 
-.delete:hover {
+.delete:hover,
+.cancel:hover {
   background: var(--dark-red);
+}
+
+button[disabled],
+button[disabled]:hover {
+  background-color: var(--lighter-gray); 
+  color: var(--light-gray);
 }

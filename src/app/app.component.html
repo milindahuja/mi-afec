@@ -1,9 +1,9 @@
 <header class="header">
-  Videos
+  Videos - {{showAddVideoForm}}
   <mi-button
     [buttonType]="'primary'"
     [text]="'Add video'"
-    (click)="showAddVideoForm = true"
+    (click)="showAddVideoForm = true; fromHeaderText = 'Add Video';"
   ></mi-button>
 </header>
 
@@ -11,24 +11,22 @@
   <div *ngIf="!showAddVideoForm">
     <h1>VManager Demo v0.0.1</h1>
     <ng-container *ngIf="videos.length > 0">
-      <mi-videos-table [videos]="videos"></mi-videos-table>
+      <mi-videos-table [videos]="videos" [editVideo]="editVideo.bind(this)" (refreshVideos)="getVideosList()"></mi-videos-table>
     </ng-container>
   </div>
 
   <div class="add-video-form" *ngIf="showAddVideoForm">
-    <h2>Add Video</h2>
-    <form (submit)="addVideo()">
+    <h2>{{ fromHeaderText }}</h2>
+    <form (submit)="handleVideo()" #videoForm="ngForm">
       <div class="form-group">
         <label for="videoName">Video Name:</label>
-        <input type="text" id="videoName" name="videoName" [(ngModel)]="newVideo.name" required>
+        <input type="text" id="videoName" name="videoName" placeholder="Video Name" [(ngModel)]="newVideo.name" required>
       </div>
       <div class="form-group">
         <label for="videoAuthor">Video Author:</label>
         <select id="videoAuthor" name="videoAuthor" [(ngModel)]="newVideo.videoAuthor" required>
-          <option value="David Munch">David Munch</option>
-          <option value="Li Sun Chi">Li Sun Chi</option>
-          <option value="Steven Scorsese">Steven Scorsese</option>
-          <option value="Milind Ahuja">Milind Ahuja</option>
+          <option value="" disabled selected>Select an Author</option> 
+          <option *ngFor="let author of authorOptions" [value]="author">{{ author }}</option>
         </select>
       </div>
       <div class="form-group">
@@ -41,8 +39,8 @@
         </select>
       </div>
       <div class="form-actions">
-        <mi-button [text]="'Cancel'" (click)="cancelAddVideoForm()"></mi-button>
-        <mi-button [text]="'Save'" type="submit"></mi-button>
+        <mi-button [text]="'Cancel'" [buttonType]="'cancel'" (click)="cancelAddVideoForm()"></mi-button>
+        <mi-button [text]="'Save'" [buttonType]="'primary'" [disabled]="!!videoForm.invalid" type="submit"></mi-button>
       </div>
     </form>
   </div>

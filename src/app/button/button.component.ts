@@ -8,4 +8,5 @@ import { Component, Input } from '@angular/core';
 export class ButtonComponent {
   @Input() buttonType?: string = 'primary';
   @Input() text: string = 'Button';
+  @Input() disabled: boolean = false;
 }

@@ -1,24 +1,40 @@
-import { Component, Input, OnInit } from "@angular/core";
+import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from "@angular/core";
 import { ProcessedVideo } from "../interfaces";
+import { DataService } from "../data.service";
 
 @Component({
   selector: "mi-videos-table",
   templateUrl: "./videos-table.component.html",
   styleUrls: ["./videos-table.component.css"],
 })
-export class VideosTableComponent implements OnInit {
+export class VideosTableComponent implements OnInit, OnChanges {
   @Input() videos: ProcessedVideo[] = [];
+  @Input() editVideo!: (video: ProcessedVideo) => void; // Function to initiate editing
+  @Output() refreshVideos: EventEmitter<void> = new EventEmitter<void>();
+  
   filteredVideos: ProcessedVideo[] = [];
   searchText: string = "";
   // Define a sorting state object for each property
   sortingState: { [key: string]: "asc" | "desc" } = {};
-
+  
+  constructor(private dataService: DataService) { }
   
   ngOnInit(): void {
-    this.filteredVideos = this.videos;
-
+    this.updateFilteredVideos();
     // Initial sorting direction
     this.initializeSortingState();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes["videos"] && !changes["videos"].firstChange) {
+      // Videos input property has changed, and it's not the first change
+      this.updateFilteredVideos();
+    }
+  }
+
+  private updateFilteredVideos() {
+    // Update filteredVideos whenever the videos input property changes
+    this.filteredVideos = this.videos;
   }
 
   private initializeSortingState() {
@@ -29,6 +45,11 @@ export class VideosTableComponent implements OnInit {
       categories: 'asc',
       releaseDate: 'asc',
     };
+  }
+
+  // Function to handle "Edit" button click
+  editClicked(video: ProcessedVideo) {
+    this.editVideo(video); // Call the editVideo function from the parent component
   }
 
   // Function to sort the videos by a given property
@@ -105,4 +126,38 @@ export class VideosTableComponent implements OnInit {
       return;
     }
   }
+
+  deleteVideo(video: ProcessedVideo) {
+    console.log('video', video);
+    // Confirm with the user before deleting
+    const confirmDelete = confirm(`Are you sure you want to delete "${video.name}"?`);
+  console.log('this.dataService.authorsData', this.dataService.authorsData);
+    if (confirmDelete) {
+      // Find the author index in the authorsData array
+      const authorIndex = this.dataService.authorsData.findIndex(
+        (author) => author.name === video.author
+      );
+      console.log('authorIndex', authorIndex);
+  
+      if (authorIndex !== -1) {
+        // Find the video index in the author's videos array
+        const videoIndex = this.dataService.authorsData[authorIndex].videos.findIndex(
+          (v) => v.id === video.id
+        );
+        console.log('videoIndex', videoIndex);
+
+        if (videoIndex !== -1) {
+          // Remove the video from the author's videos array
+          this.dataService.authorsData[authorIndex].videos.splice(videoIndex, 1);
+          // Update the API with the updated author data
+          this.dataService.updateVideo(this.dataService.authorsData[authorIndex])
+            .subscribe(() => {
+              // Emit the refreshVideos event
+              this.refreshVideos.emit();
+            });
+        }
+      }
+    }
+  }
+  
 }

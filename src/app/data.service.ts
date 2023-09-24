@@ -10,6 +10,10 @@ import { map } from 'rxjs/operators';
   providedIn: 'root',
 })
 export class DataService {
+
+  categoriesData: Category[] = [];
+  authorsData: Author[] = [];
+
   constructor(private http: HttpClient) {}
 
   // Fetch both authors and categories data
@@ -24,7 +28,8 @@ export class DataService {
     return this.getAuthorsAndCategories().pipe(
       map(([authors, categories]) => {
         const videos: ProcessedVideo[] = [];
-
+        this.authorsData = authors;
+        this.categoriesData = categories;
         authors.forEach((author) => {
           author.videos.forEach((video) => {
             const processedVideo = this.mapVideoToProcessedVideo(video, author, categories);
@@ -36,6 +41,31 @@ export class DataService {
       })
     );
   }
+
+  // Add a new Video
+  addNewVideoToAuthorData(authorDataObj: Author): Observable<void> {
+    //const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    return this.http.post<void>(`${API}/authors`, authorDataObj);
+  }
+
+  //Edit Video
+  updateVideo(authorDataObj: Author): Observable<any> {
+    return this.http.put(`${API}/authors/${authorDataObj.id}`, authorDataObj);
+  }
+
+  //Delete Video
+  deleteVideo(authorDataObj: Author): Observable<any> {
+    return this.http.delete(`${API}/authors/${authorDataObj.id}`);
+  }
+
+  getAuthorsData() {
+    return this.authorsData;
+  }
+
+  getCategoriesData() {
+    return this.categoriesData;
+  }
+
 
   private mapVideoToProcessedVideo(
     video: Video,
