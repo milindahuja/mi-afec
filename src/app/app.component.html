@@ -16,33 +16,8 @@
   </div>
 
   <div class="add-video-form" *ngIf="showAddVideoForm">
-    <h2>{{ fromHeaderText }}</h2>
-    <form (submit)="handleVideo()" #videoForm="ngForm">
-      <div class="form-group">
-        <label for="videoName">Video Name:</label>
-        <input type="text" id="videoName" name="videoName" placeholder="Video Name" [(ngModel)]="newVideo.name" required>
-      </div>
-      <div class="form-group">
-        <label for="videoAuthor">Video Author:</label>
-        <select id="videoAuthor" name="videoAuthor" [(ngModel)]="newVideo.videoAuthor" required>
-          <option value="" disabled selected>Select an Author</option> 
-          <option *ngFor="let author of authorOptions" [value]="author">{{ author }}</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="videoCategory">Video Category (Press ctrl or cmd to select multiple):</label>
-        <select id="videoCategory" name="videoCategory" [(ngModel)]="newVideo.categories" multiple required>
-          <option value="Thriller">Thriller</option>
-          <option value="Crime">Crime</option>
-          <option value="Comedy">Comedy</option>
-          <option value="Horror">Horror</option>
-        </select>
-      </div>
-      <div class="form-actions">
-        <mi-button [text]="'Cancel'" [buttonType]="'cancel'" (click)="cancelAddVideoForm()"></mi-button>
-        <mi-button [text]="'Save'" [buttonType]="'primary'" [disabled]="!!videoForm.invalid" type="submit"></mi-button>
-      </div>
-    </form>
+    <h2>{{ videoToEdit ? 'Edit Video: ' + videoToEdit.name : 'Add Video' }}</h2>
+    <app-video-form (refreshVideos)="getVideosList()" [videoToEdit]="videoToEdit" (showAddForm)="handleShowAddForm($event)"></app-video-form>
   </div>
 </main>
 

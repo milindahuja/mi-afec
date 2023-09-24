@@ -7,9 +7,10 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { ButtonComponent } from './button/button.component';
 import { VideosTableComponent } from './videos-table/videos-table.component';
+import { VideosFormComponent } from './videos-form/videos-form.component';
 
 @NgModule({
-  declarations: [AppComponent, ButtonComponent, VideosTableComponent],
+  declarations: [AppComponent, ButtonComponent, VideosTableComponent, VideosFormComponent],
   imports: [BrowserModule, HttpClientModule, AppRoutingModule, FormsModule],
   providers: [],
   bootstrap: [AppComponent],
