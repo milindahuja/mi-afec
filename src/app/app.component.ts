@@ -63,115 +63,57 @@ export class AppComponent implements OnInit {
       categories: videoCategories,
     } = this.newVideo;
 
-    console.log('this.videoToEdit', this.videoToEdit);
-    console.log('videoAuthor', videoAuthor);
+    console.log("this.videoToEdit", this.videoToEdit);
+    console.log("videoAuthor", videoAuthor);
 
     const authorObjExists = this.dataService.authorsData.find(
       (author) => author.name === videoAuthor
     );
 
-    console.log('authorObjExists', authorObjExists);
+    console.log("authorObjExists", authorObjExists);
 
-    if(!this.videoToEdit && authorObjExists) {
+    if (!this.videoToEdit && authorObjExists) {
       this.updateAuthor(authorObjExists, this.newVideo);
-    } 
-    else if(this.videoToEdit) {
+    } else if (this.videoToEdit) {
       const authorObj = this.doesAuthorExist(
         this.videoToEdit!.id,
         this.dataService.authorsData
       );
       this.updateExistingVideo(authorObj);
-    }
-    else {
+    } else {
       this.addNewAuthor();
     }
-   /*  if (this.videoToEdit) {
-      authorObj = this.doesAuthorExist(
-        this.videoToEdit!.id,
-        this.dataService.authorsData
-      );
-
-      if (authorObj) {
-        const editedVideoIndex = authorObj.videos.findIndex(
-          (video) => video.id === this.videoToEdit!.id
-        );
-
-        if (editedVideoIndex !== -1) {
-          // Update the existing video object
-          const editedVideo: Video = {
-            id: this.videoToEdit!.id,
-            catIds: this.getCategoryIdsByNames(videoCategories),
-            name: videoName,
-            releaseDate: formattedDate,
-            formats: {
-              one: { res: "1080p", size: 1000 },
-            },
-          };
-
-          authorObj.videos[editedVideoIndex] = editedVideo;
-        }
-
-        this.dataService.updateVideo(authorObj).subscribe(() => {
-          this.getVideosList();
-          this.videoToEdit = null;
-        });
-      }
-    } else {
-      // Adding a new video
-      const newAuthorId = this.dataService.authorsData.length + 1;
-      const maxVideoId = this.generateVideoId() + 1;
-      const newVideo: Video = {
-        id: maxVideoId,
-        catIds: this.getCategoryIdsByNames(videoCategories),
-        name: videoName,
-        releaseDate: formattedDate,
-        formats: {
-          one: { res: "1080p", size: 1000 },
-        },
-      };
-
-      const authorObj: Author = {
-        id: newAuthorId,
-        name: videoAuthor,
-        videos: [newVideo],
-      };
-
-      this.dataService.addNewVideoToAuthorData(authorObj).subscribe(() => {
-        this.getVideosList();
-      });
-    } */
-
     this.resetAddVideoForm();
   }
 
-  //If author does not exisiting while adding the video
+  //If author does not exists while adding the video
   addNewAuthor() {
     const newAuthorId = this.dataService.authorsData.length + 1;
-      const maxVideoId = this.generateVideoId() + 1;
-      const newVideo: Video = {
-        id: maxVideoId,
-        catIds: this.getCategoryIdsByNames(this.newVideo.categories),
-        name: this.newVideo.name,
-        releaseDate: this.getFormattedDate(),
-        formats: {
-          one: { res: "1080p", size: 1000 },
-        },
-      };
+    const maxVideoId = this.generateVideoId() + 1;
+    const newVideo: Video = {
+      id: maxVideoId,
+      catIds: this.getCategoryIdsByNames(this.newVideo.categories),
+      name: this.newVideo.name,
+      releaseDate: this.getFormattedDate(),
+      formats: {
+        one: { res: "1080p", size: 1000 },
+      },
+    };
 
-      const authorObj: Author = {
-        id: newAuthorId,
-        name: this.newVideo.videoAuthor,
-        videos: [newVideo],
-      };
+    const authorObj: Author = {
+      id: newAuthorId,
+      name: this.newVideo.videoAuthor,
+      videos: [newVideo],
+    };
 
-      this.dataService.addNewVideoToAuthorData(authorObj).subscribe(() => {
-        this.getVideosList();
-      });
+    this.dataService.addNewVideoToAuthorData(authorObj).subscribe(() => {
+      alert(`"${newVideo.name}" added successfully!`)
+      this.getVideosList();
+    });
   }
 
   //edit the existing video
   updateExistingVideo(authorObj: Author | undefined) {
-
     authorObj = this.doesAuthorExist(
       this.videoToEdit!.id,
       this.dataService.authorsData
@@ -204,27 +146,22 @@ export class AppComponent implements OnInit {
   }
 
   //add the video if author already exists
-  updateAuthor(authorObj:Author, newVideoObj: NewVideo) {
-    console.log('updateAuthor', authorObj);
+  updateAuthor(authorObj: Author, newVideoObj: NewVideo) {
+    const newVideo: Video = {
+      id: this.generateVideoId() + 1,
+      catIds: this.getCategoryIdsByNames(newVideoObj.categories),
+      name: newVideoObj.name,
+      releaseDate: this.getFormattedDate(),
+      formats: {
+        one: { res: "1080p", size: 1000 },
+      },
+    };
 
-      const newVideo: Video = {
-        id: this.generateVideoId() + 1,
-        catIds: this.getCategoryIdsByNames(newVideoObj.categories),
-        name: newVideoObj.name,
-        releaseDate: this.getFormattedDate(),
-        formats: {
-          one: { res: "1080p", size: 1000 },
-        },
-      };
+    authorObj.videos.push(newVideo);
 
-      authorObj.videos.push(newVideo);
-
-      console.log('authorObj', authorObj);
-
-      this.dataService.updateVideo(authorObj).subscribe(() => {
-        this.getVideosList();
-        //this.videoToEdit = null;
-      });
+    this.dataService.updateVideo(authorObj).subscribe(() => {
+      this.getVideosList();
+    });
   }
 
   getFormattedDate() {
@@ -278,7 +215,6 @@ export class AppComponent implements OnInit {
 
   // Function to initiate editing a video
   editVideo(video: ProcessedVideo) {
-    console.log("editVideo", video);
     // Set the videoToEdit to the selected video
     this.videoToEdit = video;
 
@@ -288,7 +224,6 @@ export class AppComponent implements OnInit {
       videoAuthor: this.videoToEdit.author,
       categories: [...this.videoToEdit.categories],
     };
-    console.log("this.newVideo", this.newVideo);
     // Show the form for editing
     this.showAddVideoForm = true;
     this.fromHeaderText = `Edit Video: ${this.newVideo.name}`;

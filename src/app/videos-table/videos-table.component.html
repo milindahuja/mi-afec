@@ -1,6 +1,9 @@
 <div class="wrapper">
   <div class="search-bar">
     <input type="text" [(ngModel)]="searchText" (input)="showAllVideos()" placeholder="Search videos">
+    <button (click)="searchText='';showAllVideos()" *ngIf="searchText.trim() !== ''" class="close-button">
+      X
+    </button>
     <button (click)="searchVideos()" *ngIf="searchText.trim() !== ''">Search</button>
   </div>
   <table class="table">
@@ -28,17 +31,25 @@
     </thead>
 
     <tbody>
-      <tr *ngFor="let video of filteredVideos; index as i; first as isFirst">
-        <td>{{ video.name }}</td>
-        <td>{{ video.author }}</td>
-        <td>{{ video.categories.join(", ") }}</td>
-        <td>{{ video.highestQualityFormat }}</td>
-        <td>{{ video.releaseDate }}</td>
-        <td>
-          <mi-button [buttonType]="'edit'" [text]="'Edit'" (click)="editClicked(video)"></mi-button>
-          <mi-button [buttonType]="'delete'" [text]="'Delete'" (click)="deleteVideo(video)"></mi-button>
-        </td>
-      </tr>
+      <ng-container *ngIf="filteredVideos.length; else noResults">
+        <tr *ngFor="let video of filteredVideos; index as i; first as isFirst">
+          <td>{{ video.name }}</td>
+          <td>{{ video.author }}</td>
+          <td>{{ video.categories.join(", ") }}</td>
+          <td>{{ video.highestQualityFormat }}</td>
+          <td>{{ video.releaseDate }}</td>
+          <td>
+            <mi-button [buttonType]="'edit'" [text]="'Edit'" (click)="editClicked(video)"></mi-button>
+            <mi-button [buttonType]="'delete'" [text]="'Delete'" (click)="deleteVideo(video)"></mi-button>
+          </td>
+        </tr>
+      </ng-container>
+      <ng-template #noResults>
+        <tr>
+          <td colspan="6" class="no-results">No results found!</td>
+        </tr>
+      </ng-template>
+
     </tbody>
   </table>
 </div>

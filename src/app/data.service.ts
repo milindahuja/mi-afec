@@ -4,23 +4,30 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { API } from './constants';
 import { Author, Category, ProcessedVideo, Video } from './interfaces';
 import { Observable, forkJoin } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { map, catchError } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root',
 })
 export class DataService {
-
   categoriesData: Category[] = [];
   authorsData: Author[] = [];
+  
+  private httpOptions = {
+    headers: new HttpHeaders({
+      'Content-Type': 'application/json',
+    }),
+  };
 
   constructor(private http: HttpClient) {}
 
   // Fetch both authors and categories data
-  getAuthorsAndCategories(): Observable<[Author[], Category[]]> {
-    const authors$ = this.http.get<Author[]>(`${API}/authors`);
-    const categories$ = this.http.get<Category[]>(`${API}/categories`);
-    return forkJoin([authors$, categories$]);
+  getAuthors(): Observable<Author[]> {
+    return this.http.get<Author[]>(`${API}/authors`, this.httpOptions);
+  }
+
+  getCategories(): Observable<Category[]> {
+    return this.http.get<Category[]>(`${API}/categories`, this.httpOptions);
   }
 
   // Transform author and category data into ProcessedVideo objects
@@ -38,24 +45,33 @@ export class DataService {
         });
 
         return videos;
+      }),
+      catchError((error) => {
+        // Handle HTTP errors here
+        console.error('Error fetching data:', error);
+        throw error; // Rethrow the error for the component to handle
       })
     );
   }
 
   // Add a new Video
   addNewVideoToAuthorData(authorDataObj: Author): Observable<void> {
-    //const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-    return this.http.post<void>(`${API}/authors`, authorDataObj);
+    return this.http.post<void>(`${API}/authors`, authorDataObj, this.httpOptions);
   }
 
   //Edit Video
   updateVideo(authorDataObj: Author): Observable<any> {
-    return this.http.put(`${API}/authors/${authorDataObj.id}`, authorDataObj);
+    return this.http.put(`${API}/authors/${authorDataObj.id}`, authorDataObj, this.httpOptions);
   }
 
   //Delete Video
-  deleteVideo(authorDataObj: Author): Observable<any> {
-    return this.http.delete(`${API}/authors/${authorDataObj.id}`);
+  deleteVideo(authorId: number): Observable<any> {
+    return this.http.delete(`${API}/authors/${authorId}`, this.httpOptions);
+  }
+
+  //Delete Video
+  deleteAuthor(authorId: number): Observable<any> {
+    return this.http.delete(`${API}/authors/${authorId}`, this.httpOptions);
   }
 
   getAuthorsData() {
@@ -66,7 +82,11 @@ export class DataService {
     return this.categoriesData;
   }
 
+  private getAuthorsAndCategories(): Observable<[Author[], Category[]]> {
+    return forkJoin([this.getAuthors(), this.getCategories()]);
+  }
 
+  // get the VideoObject with category names and highes quality label
   private mapVideoToProcessedVideo(
     video: Video,
     author: Author,
@@ -88,7 +108,7 @@ export class DataService {
     return processedVideo;
   }
 
-  findHighestQualityFormat(formats: { [key: string]: { res: string; size: number } }): string {
+  private findHighestQualityFormat(formats: { [key: string]: { res: string; size: number } }): string {
     let highestQualityFormat = '';
 
     // Iterate through the video formats to find the highest quality format
