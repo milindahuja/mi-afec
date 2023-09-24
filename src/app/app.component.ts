@@ -1,6 +1,6 @@
 import { Component, OnInit } from "@angular/core";
 import { DataService } from "./data.service";
-import { Author, NewVideo, ProcessedVideo } from "./interfaces";
+import { NewVideo, ProcessedVideo } from "./interfaces";
 
 @Component({
   selector: "mi-root",

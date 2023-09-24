@@ -17,7 +17,7 @@
 
   <div class="add-video-form" *ngIf="showAddVideoForm">
     <h2>{{ videoToEdit ? 'Edit Video: ' + videoToEdit.name : 'Add Video' }}</h2>
-    <app-video-form (refreshVideos)="getVideosList()" [videoToEdit]="videoToEdit" (showAddForm)="handleShowAddForm($event)"></app-video-form>
+    <app-video-form (refreshVideos)="getVideosList()" [videoToEdit]="videoToEdit" [showAddVideoForm]="showAddVideoForm" (showAddForm)="handleShowAddForm($event)"></app-video-form>
   </div>
 </main>
 

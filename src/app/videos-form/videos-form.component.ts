@@ -10,13 +10,13 @@ import { DataService } from "../data.service";
 })
 export class VideosFormComponent implements OnInit{
   @Input() videoToEdit!: ProcessedVideo | null;
+  @Input() showAddVideoForm!: boolean;
   @Output() formSubmission: EventEmitter<any> = new EventEmitter<any>();
   @Output() refreshVideos: EventEmitter<void> = new EventEmitter<void>();
   @Output() showAddForm: EventEmitter<boolean> = new EventEmitter<boolean>();
 
   videoForm: FormGroup;
   fromHeaderText: string = "";
-  showAddVideoForm = false;
   newVideo: NewVideo = {
     name: "",
     videoAuthor: "",
@@ -186,6 +186,11 @@ export class VideosFormComponent implements OnInit{
     );
   }
 
+  // Refresh the list of videos
+  private refreshList() {
+    this.refreshVideos.emit();
+  }
+
   onSubmit() {
     this.formSubmission.emit(this.newVideo);
     this.resetAddVideoForm();
@@ -205,7 +210,7 @@ export class VideosFormComponent implements OnInit{
     } else {
       this.addNewAuthor(name, videoAuthor, categories);
     }
-  
+    this.refreshList();
     this.resetAddVideoForm();
   }
 
@@ -220,9 +225,7 @@ export class VideosFormComponent implements OnInit{
       videoAuthor: "",
       categories: [],
     };
-    this.showAddForm.emit(this.showAddVideoForm);
+    this.showAddForm.emit(false);
     this.fromHeaderText = "";
-    // Refresh the list of videos
-    this.refreshVideos.emit();
   }
 }
