@@ -25,18 +25,42 @@ export class VideosTableComponent implements OnInit, OnChanges {
   // Define a sorting state object for each property
   sortingState: { [key: string]: "asc" | "desc" } = {};
 
-  constructor(private dataService: DataService) {}
-
-  ngOnInit(): void {
-    this.updateFilteredVideos();
-    this.initializeSortingState(); // Initial sorting direction
+   // Helper function to handle the deletion process
+   private handleDeleteVideo(video: ProcessedVideo) {
+    const authorObj = this.findAuthorByVideo(video);
+    if (authorObj) {
+      const videoIndex = this.findVideoIndexInAuthor(video, authorObj);
+      if (videoIndex !== -1) {
+        // Remove the video from the author's videos array
+        authorObj.videos.splice(videoIndex, 1);
+        // Update the API with the updated author data
+        this.updateAuthorData(authorObj);
+      }
+    }
   }
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes["videos"] && !changes["videos"].firstChange) {
-      // Videos input property has changed, and it's not the first change
-      this.updateFilteredVideos();
-    }
+  // Helper function to find the authorObj of the video
+  private findAuthorByVideo(video: ProcessedVideo) {
+    return this.dataService.authorsData.find((author) => author.name === video.author);
+  }
+
+  // Helper function to find the index of the video in the author's videos array
+  private findVideoIndexInAuthor(video: ProcessedVideo, authorObj: any) {
+    return authorObj.videos.findIndex((v: any) => v.id === video.id);
+  }
+
+  // Helper function to update author data in the API
+  private updateAuthorData(authorObj: any) {
+    this.dataService.updateVideo(authorObj).subscribe(() => {
+      if (!authorObj.videos.length) {
+        // If there are no more videos for the author, delete the author
+        this.dataService.deleteAuthor(authorObj.id).subscribe(() => {
+          this.refreshVideos.emit();
+        });
+      } else {
+        this.refreshVideos.emit();
+      }
+    });
   }
 
   // Update filteredVideos whenever the videos input property changes
@@ -52,6 +76,20 @@ export class VideosTableComponent implements OnInit, OnChanges {
       categories: "asc",
       releaseDate: "asc",
     };
+  }
+
+  constructor(private dataService: DataService) {}
+
+  ngOnInit(): void {
+    this.updateFilteredVideos();
+    this.initializeSortingState(); // Initial sorting direction
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes["videos"] && !changes["videos"].firstChange) {
+      // Videos input property has changed, and it's not the first change
+      this.updateFilteredVideos();
+    }
   }
 
   // Function to handle "Edit" button click
@@ -92,7 +130,7 @@ export class VideosTableComponent implements OnInit, OnChanges {
     } else if (Array.isArray(value)) {
       return value.join(", "); // Convert arrays to comma-separated string
     } else {
-      return ""; // Handle other types as needed
+      return "";
     }
   }
 
@@ -123,7 +161,6 @@ export class VideosTableComponent implements OnInit, OnChanges {
   showAllVideos() {
     const searchText = this.searchText.toLowerCase();
     if (searchText.trim() === "") {
-      // If the search text is empty, show all videos
       this.filteredVideos = this.videos;
     } else {
       return;
@@ -136,43 +173,5 @@ export class VideosTableComponent implements OnInit, OnChanges {
     if (confirmDelete) {
       this.handleDeleteVideo(video);
     }
-  }
-
-  // Helper function to handle the deletion process
-  private handleDeleteVideo(video: ProcessedVideo) {
-    const authorObj = this.findAuthorByVideo(video);
-    if (authorObj) {
-      const videoIndex = this.findVideoIndexInAuthor(video, authorObj);
-      if (videoIndex !== -1) {
-        // Remove the video from the author's videos array
-        authorObj.videos.splice(videoIndex, 1);
-        // Update the API with the updated author data
-        this.updateAuthorData(authorObj);
-      }
-    }
-  }
-
-  // Helper function to find the authorObj of the video
-  private findAuthorByVideo(video: ProcessedVideo) {
-    return this.dataService.authorsData.find((author) => author.name === video.author);
-  }
-
-  // Helper function to find the index of the video in the author's videos array
-  private findVideoIndexInAuthor(video: ProcessedVideo, authorObj: any) {
-    return authorObj.videos.findIndex((v: any) => v.id === video.id);
-  }
-
-  // Helper function to update author data in the API
-  private updateAuthorData(authorObj: any) {
-    this.dataService.updateVideo(authorObj).subscribe(() => {
-      if (!authorObj.videos.length) {
-        // If there are no more videos for the author, delete the author
-        this.dataService.deleteAuthor(authorObj.id).subscribe(() => {
-          this.refreshVideos.emit();
-        });
-      } else {
-        this.refreshVideos.emit();
-      }
-    });
   }
 }
