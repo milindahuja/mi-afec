@@ -118,9 +118,7 @@ export class VideosFormComponent implements OnInit{
   
     author.videos.push(newVideo);
   
-    this.dataService.updateVideo(author).subscribe(() => {
-     this.showSuccessMessage(`"${newVideo.name}" added successfully!`);
-    });
+    this.dataService.updateVideo(author).subscribe();
   }
 
   //edit video
@@ -146,7 +144,6 @@ export class VideosFormComponent implements OnInit{
   
       this.dataService.updateVideo(authorToUpdate).subscribe(() => {
         this.videoToEdit = null;
-        this.showSuccessMessage(`"${name}" updated successfully!`);
       });
     }
   }
@@ -171,13 +168,7 @@ export class VideosFormComponent implements OnInit{
       videos: [newVideo],
     };
   
-    this.dataService.addNewVideoToAuthorData(author).subscribe(() => {
-      this.showSuccessMessage(`"${newVideo.name}" added successfully!`);
-    });
-  }
-  
-  private showSuccessMessage(message: string) {
-    alert(message);
+    this.dataService.addNewVideoToAuthorData(author).subscribe();
   }
 
   private findAuthorById(authorId: number): Author | undefined {

@@ -7,7 +7,7 @@ import {
   Output,
   SimpleChanges,
 } from "@angular/core";
-import { ProcessedVideo } from "../interfaces";
+import { Author, ProcessedVideo } from "../interfaces";
 import { DataService } from "../data.service";
 
 @Component({
@@ -31,10 +31,8 @@ export class VideosTableComponent implements OnInit, OnChanges {
     if (authorObj) {
       const videoIndex = this.findVideoIndexInAuthor(video, authorObj);
       if (videoIndex !== -1) {
-        // Remove the video from the author's videos array
-        authorObj.videos.splice(videoIndex, 1);
         // Update the API with the updated author data
-        this.updateAuthorData(authorObj);
+        this.updateAuthorData(authorObj, videoIndex);
       }
     }
   }
@@ -50,17 +48,14 @@ export class VideosTableComponent implements OnInit, OnChanges {
   }
 
   // Helper function to update author data in the API
-  private updateAuthorData(authorObj: any) {
-    this.dataService.updateVideo(authorObj).subscribe(() => {
-      if (!authorObj.videos.length) {
-        // If there are no more videos for the author, delete the author
-        this.dataService.deleteAuthor(authorObj.id).subscribe(() => {
-          this.refreshVideos.emit();
-        });
-      } else {
-        this.refreshVideos.emit();
-      }
-    });
+  private updateAuthorData(authorObj: Author, videoIndex: number) {
+    if(authorObj.videos.length === 1) {
+      this.dataService.deleteAuthor(authorObj.id).subscribe();
+    } else {
+      authorObj.videos.splice(videoIndex, 1);
+      this.dataService.updateVideo(authorObj).subscribe();
+    }
+    this.refreshVideos.emit();
   }
 
   // Update filteredVideos whenever the videos input property changes
