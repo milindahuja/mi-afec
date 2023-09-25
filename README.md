@@ -105,5 +105,7 @@ EXAMPLE 2 (only 1 video):
 
 DELETE API: DELETE http://localhost:3001/authors/1 and the whole author object is removed
 
+NOTE: As these are dummy API's, I modified the logic a little bit based on my understanding from the documentation, keeping in mind the data the structure of data must remain the same. In the real cases, the logic can be changed and each API would be used for single purposes as we are aware of how backend exactly is working.
 
+Your suggestions based on the API documentations are welcome as I may have missed few things in the documentation and I would definitely modify the logic accordingly. :D  
 
