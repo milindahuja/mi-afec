@@ -61,6 +61,7 @@ export class VideosTableComponent implements OnInit, OnChanges {
       author: "asc",
       categories: "asc",
       releaseDate: "asc",
+      highestQualityFormat: "asc"
     };
   }
 
@@ -88,8 +89,8 @@ export class VideosTableComponent implements OnInit, OnChanges {
     const currentSorting = this.sortingState[property] || "asc"; // Get the current sorting direction
 
     this.filteredVideos.sort((a, b) => {
-      const valueA = this.getPropertyValue(a, property).toLowerCase();
-      const valueB = this.getPropertyValue(b, property).toLowerCase();
+      const valueA = this.utilsService.getPropertyValue(a, property).toLowerCase();
+      const valueB = this.utilsService.getPropertyValue(b, property).toLowerCase();
 
       if (currentSorting === "asc") {
         return valueA.localeCompare(valueB); // Ascending order
@@ -100,24 +101,6 @@ export class VideosTableComponent implements OnInit, OnChanges {
 
     // Toggle sorting direction for the property
     this.sortingState[property] = currentSorting === "asc" ? "desc" : "asc";
-  }
-
-  // Helper function to get the property value and convert to string if needed
-  private getPropertyValue(
-    obj: ProcessedVideo,
-    property: keyof ProcessedVideo
-  ): string {
-    const value = obj[property];
-
-    if (typeof value === "string") {
-      return value; // Property is already a string, no conversion needed
-    } else if (typeof value === "number") {
-      return value.toString(); // Convert numbers to string
-    } else if (Array.isArray(value)) {
-      return value.join(", "); // Convert arrays to comma-separated string
-    } else {
-      return "";
-    }
   }
 
   // Function to perform a search when the Search button is clicked
@@ -134,7 +117,9 @@ export class VideosTableComponent implements OnInit, OnChanges {
           video.author.toLowerCase().includes(searchText) ||
           video.categories.some((category) =>
             category.toLowerCase().includes(searchText)
-          )
+          ) ||
+          video.releaseDate.toLowerCase().includes(searchText) || 
+          video.highestQualityFormat.toLowerCase().includes(searchText)
         );
       });
 

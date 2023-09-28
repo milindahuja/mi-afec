@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { Author, Category, Formats } from "../interfaces";
+import { Author, Category, Formats, ProcessedVideo } from "../interfaces";
 
 @Injectable({
   providedIn: "root",
@@ -75,5 +75,23 @@ export class UtilsService {
     return {
       [formatName]: { res: resolution, size: 0 },
     };
+  }
+
+  // Helper function to get the property value and convert to string if needed
+  getPropertyValue(
+    obj: ProcessedVideo,
+    property: keyof ProcessedVideo
+  ): string {
+    const value = obj[property];
+
+    if (typeof value === "string") {
+      return value; // Property is already a string, no conversion needed
+    } else if (typeof value === "number") {
+      return value.toString(); // Convert numbers to string
+    } else if (Array.isArray(value)) {
+      return value.join(", "); // Convert arrays to comma-separated string
+    } else {
+      return "";
+    }
   }
 }

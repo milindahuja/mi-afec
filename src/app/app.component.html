@@ -4,7 +4,7 @@
     [buttonType]="'primary'"
     [text]="'Add video'"
     (click)="addNewVideo()"
-    [disabled]="showAddVideoForm"
+    *ngIf="!showAddVideoForm"
   ></mi-button>
 </header>
 

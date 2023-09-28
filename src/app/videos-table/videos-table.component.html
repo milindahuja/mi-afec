@@ -21,7 +21,10 @@
           Categories
           <span class="sort-indicator" [ngClass]="{'asc': sortingState['categories'] === 'asc', 'desc': sortingState['categories'] === 'desc'}"></span>
         </th>
-        <th>Highest quality format</th>
+        <th (click)="sortBy('highestQualityFormat')">
+          Highest quality format
+          <span class="sort-indicator" [ngClass]="{'asc': sortingState['highestQualityFormat'] === 'asc', 'desc': sortingState['highestQualityFormat'] === 'desc'}"></span>
+        </th>
         <th (click)="sortBy('releaseDate')">
           Release Date
           <span class="sort-indicator" [ngClass]="{'asc': sortingState['releaseDate'] === 'asc', 'desc': sortingState['releaseDate'] === 'desc'}"></span>
