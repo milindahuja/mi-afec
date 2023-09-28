@@ -1,5 +1,5 @@
 import { Component, OnInit } from "@angular/core";
-import { DataService } from "./data.service";
+import { DataService } from "./sevices/data.service";
 import { NewVideo, ProcessedVideo } from "./interfaces";
 
 @Component({
@@ -46,5 +46,13 @@ export class AppComponent implements OnInit {
   // Listen to the showAddForm event from VideosFormComponent
   handleShowAddForm(showAddForm: boolean) {
     this.showAddVideoForm = showAddForm;
+  }
+
+  addNewVideo(){
+    if(this.videoToEdit) {
+      this.videoToEdit = null;
+    }
+    this.showAddVideoForm = true; 
+    this.fromHeaderText = 'Add Video';
   }
 }

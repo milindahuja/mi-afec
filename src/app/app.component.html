@@ -3,7 +3,8 @@
   <mi-button
     [buttonType]="'primary'"
     [text]="'Add video'"
-    (click)="showAddVideoForm = true; fromHeaderText = 'Add Video';"
+    (click)="addNewVideo()"
+    [disabled]="showAddVideoForm"
   ></mi-button>
 </header>
 

@@ -1,7 +1,8 @@
 import { Component, Input, Output, EventEmitter, OnInit } from "@angular/core";
 import { FormBuilder, FormGroup, Validators } from "@angular/forms";
-import { Author, NewVideo, ProcessedVideo, Video } from "./../interfaces";
-import { DataService } from "../data.service";
+import { Author, Category, NewVideo, ProcessedVideo, Video } from "../interfaces";
+import { DataService } from "../sevices/data.service";
+import { UtilsService } from "../sevices/utils.service";
 
 @Component({
   selector: "app-video-form",
@@ -15,6 +16,8 @@ export class VideosFormComponent implements OnInit {
   @Output() refreshVideos: EventEmitter<void> = new EventEmitter<void>();
   @Output() showAddForm: EventEmitter<boolean> = new EventEmitter<boolean>();
 
+  authorsData: Author[] = [];
+  categoriesData: Category[] = [];
   videoForm: FormGroup;
   fromHeaderText: string = "";
   newVideo: NewVideo = {
@@ -31,7 +34,8 @@ export class VideosFormComponent implements OnInit {
 
   constructor(
     private dataService: DataService,
-    private formBuilder: FormBuilder
+    private formBuilder: FormBuilder,
+    private utilsService: UtilsService
   ) {
     this.videoForm = this.formBuilder.group({
       name: ["", Validators.required],
@@ -49,43 +53,8 @@ export class VideosFormComponent implements OnInit {
         categories: [...this.videoToEdit.categories],
       };
     }
-  }
-
-  // Get the current date in a formatted string
-  private getFormattedDate() {
-    return new Date().toISOString().slice(0, 10);
-  }
-
-  // Generate a unique video ID based on existing data
-  private generateVideoId() {
-    let id = 0;
-    for (const person of this.dataService?.authorsData) {
-      for (const video of person.videos) {
-        if (video.id > id) {
-          id = video.id;
-        }
-      }
-    }
-
-    return id;
-  }
-
-  // Get category IDs by names
-  private getCategoryIdsByNames(categories: string[]): number[] {
-    return categories
-      .map((name) =>
-        this.dataService.categoriesData.find(
-          (category) => category.name === name
-        )
-      )
-      .filter((category) => !!category)
-      .map((category) => category!.id);
-  }
-
-  private findAuthorByName(authorName: string): Author | undefined {
-    return this.dataService.authorsData.find(
-      (author) => author.name === authorName
-    );
+    this.authorsData = this.dataService.authorsData;
+    this.categoriesData = this.dataService.categoriesData;
   }
 
   // Add a new author, if not already exists
@@ -95,26 +64,25 @@ export class VideosFormComponent implements OnInit {
     categories: string[]
   ) {
     if (!author) {
-      const newAuthorId = this.dataService.authorsData.length + 1;
+      const newAuthorId = this.authorsData.length + 1;
       author = {
         id: newAuthorId,
         name,
         videos: [],
       };
-      this.dataService.authorsData.push(author);
+      this.authorsData.push(author);
     }
 
-    const maxVideoId = this.generateVideoId() + 1;
+    const maxVideoId = this.utilsService.generateVideoId(this.authorsData);
     const newVideo: Video = {
       id: maxVideoId,
-      catIds: this.getCategoryIdsByNames(categories),
+      catIds: this.utilsService.getCategoryIdsByNames(categories, this.categoriesData),
       name,
-      releaseDate: this.getFormattedDate(),
+      releaseDate: this.utilsService.getFormattedDate(),
       formats: {
         one: { res: "1080p", size: 1000 },
       },
     };
-
     author.videos.push(newVideo);
 
     this.dataService.updateVideo(author).subscribe();
@@ -124,25 +92,18 @@ export class VideosFormComponent implements OnInit {
   private createEditedVideo(name: string, categories: string[]): Video {
     return {
       id: this.videoToEdit?.id || 0,
-      catIds: this.getCategoryIdsByNames(categories),
+      catIds: this.utilsService.getCategoryIdsByNames(categories, this.categoriesData),
       name,
-      releaseDate: this.videoToEdit?.releaseDate || this.getFormattedDate(),
-      formats: {
+      releaseDate: this.videoToEdit?.releaseDate || this.utilsService.getFormattedDate(),
+      formats: this.utilsService.createFormatsFromHighestQualityLabel(this.videoToEdit!.highestQualityFormat) || {
         one: { res: "1080p", size: 1000 },
-      },
+      }
     };
-  }
-
-  // Find an author's index by name
-  private findAuthorIndexByName(authorName: string): number {
-    return this.dataService.authorsData.findIndex(
-      (author) => author.name === authorName
-    );
   }
 
   // Create a new author
   private createAuthor(name: string): Author {
-    const newAuthorId = this.dataService.authorsData.length + 1;
+    const newAuthorId = this.authorsData.length + 1;
     return {
       id: newAuthorId,
       name,
@@ -170,9 +131,7 @@ export class VideosFormComponent implements OnInit {
     newAuthorName: string | ""
   ) {
     if (authorToUpdate) {
-      const editedVideoIndex = authorToUpdate.videos.findIndex(
-        (video) => video.id === this.videoToEdit!.id
-      );
+      const editedVideoIndex = this.utilsService.findVideoIndex(authorToUpdate, this.videoToEdit!.id);
 
       if (editedVideoIndex !== -1) {
         const editedVideo: Video = this.createEditedVideo(name, categories);
@@ -180,17 +139,17 @@ export class VideosFormComponent implements OnInit {
         // Check if the author name is changing
         if (newAuthorName && newAuthorName !== authorToUpdate.name) {
           // Check if the new author already exists
-          const newAuthorIndex = this.findAuthorIndexByName(newAuthorName);
+          const newAuthorIndex = this.utilsService.findAuthorIndexByName(newAuthorName, this.authorsData);
 
           if (newAuthorIndex !== -1) {
             // Move the video to the new author's videos array
-            this.dataService.authorsData[newAuthorIndex].videos.push(
+            this.authorsData[newAuthorIndex].videos.push(
               editedVideo
             );
 
             //update API to update the new author
             this.dataService
-              .updateVideo(this.dataService.authorsData[newAuthorIndex])
+              .updateVideo(this.authorsData[newAuthorIndex])
               .subscribe();
 
             this.removeVideoFromCurrentAuthor(authorToUpdate, editedVideoIndex);
@@ -205,9 +164,7 @@ export class VideosFormComponent implements OnInit {
         } else {
           // Update the edited video in the current author's videos array
           authorToUpdate.videos[editedVideoIndex] = editedVideo;
-          this.dataService.updateVideo(authorToUpdate).subscribe(() => {
-            this.videoToEdit = null;
-          });
+          this.dataService.updateVideo(authorToUpdate).subscribe();
         }
       }
     }
@@ -219,13 +176,13 @@ export class VideosFormComponent implements OnInit {
     videoAuthor: string,
     categories: string[]
   ) {
-    const newAuthorId = this.dataService.authorsData.length + 1;
-    const maxVideoId = this.generateVideoId() + 1;
+    const newAuthorId = this.authorsData.length + 1;
+    const maxVideoId = this.utilsService.generateVideoId(this.authorsData);
     const newVideo: Video = {
       id: maxVideoId,
-      catIds: this.getCategoryIdsByNames(categories),
+      catIds: this.utilsService.getCategoryIdsByNames(categories, this.categoriesData),
       name,
-      releaseDate: this.getFormattedDate(),
+      releaseDate: this.utilsService.getFormattedDate(),
       formats: {
         one: { res: "1080p", size: 1000 },
       },
@@ -240,11 +197,11 @@ export class VideosFormComponent implements OnInit {
     this.dataService.addNewVideoToAuthorData(author).subscribe();
   }
 
-  private findAuthorById(authorId: number): Author | undefined {
-    return this.dataService.authorsData.find((author) =>
+  /* private findAuthorById(authorId: number): Author | undefined {
+    return this.authorsData.find((author) =>
       author.videos.some((video) => video.id === authorId)
     );
-  }
+  } */
 
   // Refresh the list of videos
   private refreshList() {
@@ -260,12 +217,11 @@ export class VideosFormComponent implements OnInit {
   handleVideo() {
     const { name, videoAuthor, categories } = this.newVideo;
 
-    const authorExists = this.findAuthorByName(videoAuthor);
-    console.log("authorExists", authorExists);
+    const authorExists = this.utilsService.findAuthorByName(videoAuthor, this.authorsData);
     if (!this.videoToEdit && authorExists) {
       this.updateAuthorOrAddNew(authorExists, name, categories);
     } else if (this.videoToEdit) {
-      const authorToUpdate = this.findAuthorById(this.videoToEdit!.id);
+      const authorToUpdate = this.utilsService.findAuthorByVideoId(this.videoToEdit!.id, this.authorsData);
       this.updateExistingVideo(
         authorToUpdate,
         name,

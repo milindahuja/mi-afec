@@ -8,7 +8,8 @@ import {
   SimpleChanges,
 } from "@angular/core";
 import { Author, ProcessedVideo } from "../interfaces";
-import { DataService } from "../data.service";
+import { DataService } from "../sevices/data.service";
+import { UtilsService } from "../sevices/utils.service";
 
 @Component({
   selector: "mi-videos-table",
@@ -27,24 +28,14 @@ export class VideosTableComponent implements OnInit, OnChanges {
 
    // Helper function to handle the deletion process
    private handleDeleteVideo(video: ProcessedVideo) {
-    const authorObj = this.findAuthorByVideo(video);
+    const authorObj = this.utilsService.findAuthorByName(video.author, this.dataService.authorsData);
     if (authorObj) {
-      const videoIndex = this.findVideoIndexInAuthor(video, authorObj);
+      const videoIndex = this.utilsService.findVideoIndex(authorObj, video.id);
       if (videoIndex !== -1) {
         // Update the API with the updated author data
         this.updateAuthorData(authorObj, videoIndex);
       }
     }
-  }
-
-  // Helper function to find the authorObj of the video
-  private findAuthorByVideo(video: ProcessedVideo) {
-    return this.dataService.authorsData.find((author) => author.name === video.author);
-  }
-
-  // Helper function to find the index of the video in the author's videos array
-  private findVideoIndexInAuthor(video: ProcessedVideo, authorObj: any) {
-    return authorObj.videos.findIndex((v: any) => v.id === video.id);
   }
 
   // Helper function to update author data in the API
@@ -73,7 +64,7 @@ export class VideosTableComponent implements OnInit, OnChanges {
     };
   }
 
-  constructor(private dataService: DataService) {}
+  constructor(private dataService: DataService, private utilsService: UtilsService) {}
 
   ngOnInit(): void {
     this.updateFilteredVideos();
