@@ -122,7 +122,12 @@ export class VideosFormComponent implements OnInit{
   }
 
   //edit video
-  private updateExistingVideo(authorToUpdate: Author | undefined, name: string, categories: string[]) {
+  private updateExistingVideo(
+    authorToUpdate: Author | undefined,
+    name: string,
+    categories: string[],
+    newAuthorName: string | ''
+  ) {
     if (authorToUpdate) {
       const editedVideoIndex = authorToUpdate.videos.findIndex(
         (video) => video.id === this.videoToEdit!.id
@@ -139,14 +144,68 @@ export class VideosFormComponent implements OnInit{
           },
         };
   
-        authorToUpdate.videos[editedVideoIndex] = editedVideo;
-      }
+        // Check if the author name is changing
+        if (newAuthorName && newAuthorName !== authorToUpdate.name) {
+          const currentAuthorIndex = this.dataService.authorsData.findIndex(
+            (author) => author.name === authorToUpdate.name
+          );
   
-      this.dataService.updateVideo(authorToUpdate).subscribe(() => {
-        this.videoToEdit = null;
-      });
+          // Check if the new author already exists
+          const newAuthorIndex = this.dataService.authorsData.findIndex(
+            (author) => author.name === newAuthorName
+          );
+  
+          if (newAuthorIndex !== -1) {
+            // Move the video to the new author's videos array
+            this.dataService.authorsData[newAuthorIndex].videos.push(editedVideo);
+
+            //update API to update the new author
+            this.dataService.updateVideo(this.dataService.authorsData[newAuthorIndex]).subscribe();
+  
+            // Remove the video from the current author's videos array
+            authorToUpdate.videos.splice(editedVideoIndex, 1);
+  
+            // If the current author has no more videos, delete the author object
+            if (authorToUpdate.videos.length === 0) {
+              this.dataService.deleteAuthor(authorToUpdate.id).subscribe();
+            } else {
+              //update API to update the current author
+              this.dataService.updateVideo(authorToUpdate).subscribe();
+            }
+          } else {
+            // Create a new author with the given name
+            const newAuthor: Author = {
+              id: this.dataService.authorsData.length+1,
+              name: newAuthorName,
+              videos: [editedVideo], // Add the edited video to the new author's videos array
+            };
+  
+            // Remove the video from the current author's videos array
+            authorToUpdate.videos.splice(editedVideoIndex, 1);
+
+            // If the current author has no more videos, delete the author object //repeated code (make common function)
+            if (authorToUpdate.videos.length === 0) {
+              //this.dataService.authorsData.splice(currentAuthorIndex, 1);
+              this.dataService.deleteAuthor(authorToUpdate.id).subscribe();
+            } else {
+              //update API to update the current author
+              this.dataService.updateVideo(authorToUpdate).subscribe();
+            }
+  
+            // Add the new author to the authors array
+            this.dataService.addNewVideoToAuthorData(newAuthor).subscribe();
+          }
+        } else {
+          // Update the edited video in the current author's videos array
+          authorToUpdate.videos[editedVideoIndex] = editedVideo;
+          this.dataService.updateVideo(authorToUpdate).subscribe(() => {
+            this.videoToEdit = null;
+          });
+        }
+      }
     }
   }
+  
   
   // add new video with new Author
   private addNewAuthor(name: string, videoAuthor: string, categories: string[]) {
@@ -192,12 +251,12 @@ export class VideosFormComponent implements OnInit{
     const { name, videoAuthor, categories } = this.newVideo;
   
     const authorExists = this.findAuthorByName(videoAuthor);
-  
+    console.log('authorExists', authorExists);
     if (!this.videoToEdit && authorExists) {
       this.updateAuthorOrAddNew(authorExists, name, categories);
     } else if (this.videoToEdit) {
       const authorToUpdate = this.findAuthorById(this.videoToEdit!.id);
-      this.updateExistingVideo(authorToUpdate, name, categories);
+      this.updateExistingVideo(authorToUpdate, name, categories, authorExists?.name ? authorExists?.name : this.newVideo.videoAuthor);
     } else {
       this.addNewAuthor(name, videoAuthor, categories);
     }
