@@ -1,8 +1,8 @@
 import { Component, Input, Output, EventEmitter, OnInit } from "@angular/core";
 import { FormBuilder, FormGroup, Validators } from "@angular/forms";
 import { Author, Category, NewVideo, ProcessedVideo, Video } from "../interfaces";
-import { DataService } from "../sevices/data.service";
-import { UtilsService } from "../sevices/utils.service";
+import { DataService } from "../services/data.service";
+import { UtilsService } from "../services/utils.service";
 
 @Component({
   selector: "app-video-form",

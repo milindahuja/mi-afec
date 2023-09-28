@@ -8,8 +8,8 @@ import {
   SimpleChanges,
 } from "@angular/core";
 import { Author, ProcessedVideo } from "../interfaces";
-import { DataService } from "../sevices/data.service";
-import { UtilsService } from "../sevices/utils.service";
+import { DataService } from "../services/data.service";
+import { UtilsService } from "../services/utils.service";
 
 @Component({
   selector: "mi-videos-table",

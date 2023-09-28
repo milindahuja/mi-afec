@@ -1,5 +1,5 @@
 import { Component, OnInit } from "@angular/core";
-import { DataService } from "./sevices/data.service";
+import { DataService } from "./services/data.service";
 import { NewVideo, ProcessedVideo } from "./interfaces";
 
 @Component({
