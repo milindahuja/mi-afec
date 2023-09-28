@@ -60,6 +60,13 @@ So for example the following object exists in authors json:
 
 the API Url would look like: http://localhost:3001/authors/1, where 1 is the ID of the existing author.
 
+UPDATED: In case author's name is being edited, following cases are handeled:
+1. if author name already exist, the video is being pushed to that author and removed from the current author,
+2. if author name doesn't exist, new authorObj is created and the edited video is then pushed to it's videos array and removed from the current author's videos array
+
+In both the above cases if current author's videos array is empty, the whole array object is being removed.
+
+
 - Delete Video - Here, initially, I was sending the author's ID in the URL along with the deleted video object as a request body assuming the backend would find the video and remove it from the author's array keeping the other videos in that author's video array as it is but it deletes the whole author. I tried using a different url' http://localhost:3001/authors/{authorID}/video/{videoID} but it was giving 404 so I made use of update API where I was just changing the author's object by removing the selected video from its videos array and then check if that author's videos array is empty If that is the case I am removing that author's object from the author's data using DELETE API.
 
 Let us take one of the author's object:
